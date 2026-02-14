@@ -1,18 +1,76 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ne">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>For You 🌹</title>
-<link rel="stylesheet" href="style.css">
-</head>
+<style>
+:root{
+  --rose:#ff4f7a;
+  --bg1:#fff5f8;
+  --bg2:#fdeef4;
+}
 
+html,body{margin:0;height:100%;font-family:Inter,system-ui;overflow:hidden;}
+body{background:linear-gradient(180deg,var(--bg1),var(--bg2));display:flex;align-items:center;justify-content:center;}
+
+.stage{
+  width:min(1200px,98vw);
+  height:min(780px,95vh);
+  background:white;
+  border-radius:24px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,0.1);
+  transition:box-shadow 1s ease;
+}
+.stage.glow{box-shadow:0 20px 80px rgba(255,79,122,0.35);}
+
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:white;z-index:100;}
+.spinner{width:40px;height:40px;border:4px solid #eee;border-top:4px solid var(--rose);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{100%{transform:rotate(360deg)}}
+
+.countdown{position:absolute;inset:0;display:grid;place-items:center;background:rgba(255,255,255,0.9);z-index:10;}
+.count{font-size:clamp(60px,12vw,140px);font-weight:800;color:var(--rose);animation:pop 1.2s ease forwards;}
+@keyframes pop{0%{opacity:0;transform:scale(0.8)}40%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1.3)}}
+
+.actor{position:absolute;bottom:60px;left:-150px;width:120px; z-index:30;}
+.actor.walk{animation:walk 7s ease forwards;}
+@keyframes walk{100%{transform:translateX(35vw)}}
+
+.bouquet{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);width:min(580px,90vw);height:min(580px,90vw);opacity:0;transition:opacity 1.5s ease;z-index:10;}
+.bouquet.show{opacity:1;}
+
+.flower{position:relative;width:100%;height:100%;padding:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;}
+.flower.dim{filter:blur(4px) brightness(0.8);}
+
+.petal{position:absolute;overflow:hidden;cursor:pointer;box-shadow:0 12px 35px rgba(0,0,0,0.3);transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94);border:2px solid rgba(255,255,255,0.95);transform-origin:50% 50%;}
+.petal img{width:100%;height:100%;object-fit:cover;object-position:center;}
+.petal.active{width:450px !important;height:360px !important;left:50% !important;top:50% !important;transform:translate(-50%,-50%) scale(1) !important;z-index:100;border-radius:20px;box-shadow:0 40px 100px rgba(0,0,0,0.5);clip-path:unset !important;animation:zoomIn 0.5s ease forwards;}
+@keyframes zoomIn{0%{transform:translate(-50%,-50%) scale(0);}60%{transform:translate(-50%,-50%) scale(1.1);}100%{transform:translate(-50%,-50%) scale(1);}}
+
+.close-btn{position:absolute;top:18px;right:18px;background:rgba(255,255,255,0.98);color:var(--rose);border:3px solid var(--rose);border-radius:50%;width:40px;height:40px;font-size:20px;font-weight:800;display:none;cursor:pointer;backdrop-filter:blur(20px);transition:all 0.3s ease;}
+.close-btn:hover{background:var(--rose);color:white;transform:scale(1.15);}
+.petal.active .close-btn{display:block;}
+
+.confetti{position:absolute;inset:0;pointer-events:none;}
+.confetti-piece{position:absolute;top:-10vh;pointer-events:none;animation:fall linear forwards;}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg);}100%{transform:translateY(110vh) rotate(720deg);}}
+
+.text{position:absolute;bottom:40px;width:100%;text-align:center;font-size:26px;font-weight:700;opacity:0;transition:opacity 1.5s ease;line-height:1.4; z-index:20;}
+.text.show{opacity:1;}
+
+.restart{position:absolute;bottom:25px;right:30px;background:var(--rose);color:white;border:none;padding:14px 28px;border-radius:28px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 0.5s ease;font-weight:600;font-size:17px; z-index:20;}
+.restart.show{opacity:1;pointer-events:auto;}
+.restart:hover{background:#e9456a;transform:translateY(-3px);}
+</style>
+</head>
 <body>
 <div class="stage" id="stage">
   <div class="loading" id="loading"><div class="spinner"></div></div>
   <div class="countdown" id="countdown"><div id="countHolder"></div></div>
   <div class="confetti" id="confetti"></div>
-  
+
   <div class="actor" id="actor">
     <svg viewBox="0 0 120 220">
       <circle cx="60" cy="30" r="18" fill="#fff" stroke="#111" stroke-width="4"/>
@@ -28,13 +86,166 @@
     <div class="flower" id="flower"></div>
   </div>
 
-  <div class="text" id="text">
-    तिमीले नपाएको रोजको सट्टा —  
-    तिमीले भरिएको यो फूल 🌹
-  </div>
+  <div class="text" id="text">तिमीले नपाएको रोजको सट्टा — तिमीले भरिएको यो फूल 🌹</div>
   <button class="restart" id="restart">Restart</button>
 </div>
 
-<script src="script.js"></script>
+<script>
+const photos = [
+  {src:"https://picsum.photos/200/200?random=1"},
+  {src:"https://picsum.photos/200/200?random=2"},
+  {src:"https://picsum.photos/200/200?random=3"},
+  {src:"https://picsum.photos/200/200?random=4"},
+  {src:"https://picsum.photos/200/200?random=5"},
+  {src:"https://picsum.photos/200/200?random=6"}
+];
+
+const loading=document.getElementById("loading"),
+      countdown=document.getElementById("countdown"),
+      countHolder=document.getElementById("countHolder"),
+      actor=document.getElementById("actor"),
+      bouquet=document.getElementById("bouquet"),
+      flower=document.getElementById("flower"),
+      text=document.getElementById("text"),
+      confetti=document.getElementById("confetti"),
+      stage=document.getElementById("stage"),
+      restart=document.getElementById("restart");
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function startCountdown(){
+  for(let i=3;i>=1;i--){
+    const el=document.createElement("div");
+    el.className="count";
+    el.textContent=i;
+    countHolder.innerHTML="";
+    countHolder.appendChild(el);
+    await sleep(1200);
+  }
+  countdown.style.display="none";
+  startScene();
+}
+
+function startScene(){
+  actor.classList.add("walk");
+  setTimeout(()=>{
+    buildRangoliPattern();
+    bouquet.classList.add("show");
+    text.classList.add("show");
+    stage.classList.add("glow");
+    restart.classList.add("show");
+    createHeartConfetti();
+  },7000);
+}
+
+function buildRangoliPattern(){
+  flower.innerHTML="";
+  const centerX = flower.offsetWidth/2;
+  const centerY = flower.offsetHeight/2;
+
+  const centerPetal = document.createElement("div");
+  centerPetal.className="petal center-heart";
+  centerPetal.style.width="90px";
+  centerPetal.style.height="90px";
+  centerPetal.style.left=centerX+"px";
+  centerPetal.style.top=centerY+"px";
+  centerPetal.style.transform="translate(-50%, -50%)";
+  centerPetal.style.clipPath="ellipse(50% 50% at 50% 50%)";
+  centerPetal.style.zIndex=20;
+  const centerImg=document.createElement("img");
+  centerImg.src=photos[0].src;
+  centerPetal.appendChild(centerImg);
+  addClickHandler(centerPetal);
+  flower.appendChild(centerPetal);
+
+  const innerLayerRadius=120, outerLayerRadius=200;
+  const used=new Set([0]);
+
+  for(let i=0;i<8;i++){
+    const angle=(i/8)*Math.PI*2;
+    const x=centerX+Math.cos(angle)*innerLayerRadius;
+    const y=centerY+Math.sin(angle)*innerLayerRadius*0.9;
+    let idx;
+    do{idx=Math.floor(Math.random()*photos.length);}while(used.has(idx));
+    used.add(idx);
+    const p=createPetal(70,x,y,idx,angle);
+    flower.appendChild(p);
+  }
+
+  for(let i=0;i<12;i++){
+    const angle=(i/12)*Math.PI*2;
+    const x=centerX+Math.cos(angle)*outerLayerRadius;
+    const y=centerY+Math.sin(angle)*outerLayerRadius*0.9;
+    let idx;
+    do{idx=Math.floor(Math.random()*photos.length);}while(used.has(idx));
+    used.add(idx);
+    const p=createPetal(60,x,y,idx,angle);
+    flower.appendChild(p);
+  }
+}
+
+function createPetal(size,x,y,idx,angle){
+  const petal=document.createElement("div");
+  petal.className="petal";
+  petal.style.width=size+"px";
+  petal.style.height=size*0.9+"px";
+  petal.style.left=x+"px";
+  petal.style.top=y+"px";
+  petal.style.transform=`translate(-50%,-50%) rotate(${angle*180/Math.PI}deg)`;
+  const img=document.createElement("img");
+  img.src=photos[idx].src;
+  petal.appendChild(img);
+  addClickHandler(petal);
+  return petal;
+}
+
+function addClickHandler(petal){
+  const close=document.createElement("button");
+  close.className="close-btn";
+  close.textContent="×";
+  close.onclick=(e)=>{
+    e.stopPropagation();
+    flower.classList.remove("dim");
+    document.querySelectorAll(".petal").forEach(p=>p.classList.remove("active"));
+  };
+  petal.appendChild(close);
+  petal.onclick=(e)=>{
+    e.stopPropagation();
+    flower.classList.add("dim");
+    document.querySelectorAll(".petal").forEach(p=>p.classList.remove("active"));
+    petal.classList.add("active");
+  };
+}
+
+function createHeartConfetti(){
+  const hearts=["❤️","💖","💘","💝"];
+  function spawn(){
+    const c=document.createElement("div");
+    c.className="confetti-piece";
+    c.style.left=Math.random()*100+"%";
+    c.style.fontSize=(10+Math.random()*12)+"px";
+    c.style.animationDuration=(2.5+Math.random()*1.5)+"s";
+    c.textContent=hearts[Math.floor(Math.random()*hearts.length)];
+    confetti.appendChild(c);
+    setTimeout(()=>c.remove(),4000);
+  }
+  setInterval(spawn,200);
+}
+
+restart.onclick=()=>{
+  actor.classList.remove("walk");
+  bouquet.classList.remove("show");
+  text.classList.remove("show");
+  stage.classList.remove("glow");
+  restart.classList.remove("show");
+  flower.innerHTML="";
+  confetti.innerHTML="";
+  countdown.style.display="grid";
+  startCountdown();
+};
+
+setTimeout(()=>{loading.style.display="none";startCountdown();},1500);
+</script>
 </body>
 </html>
+
