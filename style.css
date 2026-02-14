@@ -114,8 +114,8 @@ body{
 .petal.active .close-btn{display:block;}
 
 .confetti{position:absolute;inset:0;pointer-events:none;}
-.confetti-piece{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--rose);animation:fall 3s linear forwards;}
-@keyframes fall{0%{transform:translateY(-10vh) rotate(0deg)}100%{transform:translateY(110vh) rotate(720deg)}}
+.confetti-piece{position:absolute;top:-10vh;pointer-events:none;animation:fall linear forwards;}
+@keyframes fall{0%{transform:translateY(0) rotate(0deg);}100%{transform:translateY(110vh) rotate(720deg);}}
 
 .text{position:absolute;bottom:40px;width:100%;text-align:center;font-size:26px;font-weight:700;opacity:0;transition:opacity 1.5s ease;line-height:1.4; z-index:20;}
 .text.show{opacity:1;}
@@ -123,14 +123,3 @@ body{
 .restart{position:absolute;bottom:25px;right:30px;background:var(--rose);color:white;border:none;padding:14px 28px;border-radius:28px;cursor:pointer;opacity:0;transition:opacity 0.5s ease;font-weight:600;font-size:17px; z-index:20;}
 .restart.show{opacity:1;}
 .restart:hover{background:#e9456a;transform:translateY(-3px);}
-.confetti-piece{
-  position:absolute;
-  top:-10vh;
-  pointer-events:none;
-  animation:fall linear forwards;
-}
-
-@keyframes fall{
-  0% { transform: translateY(0) rotate(0deg); }
-  100% { transform: translateY(110vh) rotate(720deg); }
-}
