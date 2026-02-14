@@ -1,50 +1,3 @@
-const photos=[
-  {src:"/photos/1.jpg"},
-  {src:"/photos/2.jpg"},
-  {src:"/photos/3.jpg"},
-  {src:"/photos/4.jpg"},
-  {src:"/photos/5.jpg"},
-  {src:"/photos/6.jpg"}
-];
-
-const loading = document.getElementById("loading");
-const countdown = document.getElementById("countdown");
-const countHolder = document.getElementById("countHolder");
-const actor = document.getElementById("actor");
-const bouquet = document.getElementById("bouquet");
-const flower = document.getElementById("flower");
-const text = document.getElementById("text");
-const confetti = document.getElementById("confetti");
-const stage = document.getElementById("stage");
-const restart = document.getElementById("restart");
-
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
-
-async function startCountdown(){
-  for(let i=3;i>=1;i--){
-    const el = document.createElement("div");
-    el.className="count";
-    el.textContent = i;
-    countHolder.innerHTML="";
-    countHolder.appendChild(el);
-    await sleep(1200);
-  }
-  countdown.style.display="none";
-  startScene();
-}
-
-function startScene(){
-  actor.classList.add("walk");
-  setTimeout(()=>{
-    buildRangoliPattern();
-    bouquet.classList.add("show");
-    text.classList.add("show");
-    stage.classList.add("glow");
-    restart.classList.add("show");
-    createConfetti();
-  },7000);
-}
-
 function buildRangoliPattern(){
   flower.innerHTML="";
   const centerX = flower.offsetWidth/2;
@@ -67,27 +20,25 @@ function buildRangoliPattern(){
   addClickHandler(centerPetal);
   flower.appendChild(centerPetal);
 
-  const layer1Radius = 120;
-  for(let i=0;i<8;i++){
-    const angle = (i/8)*Math.PI*2;
-    const x = centerX + Math.cos(angle)*layer1Radius;
-    const y = centerY + Math.sin(angle)*layer1Radius*0.9;
-    const petal = createRangoliPetal(70,x,y,i,angle);
-    petal.style.background = "#ff6b9d";
-    petal.style.clipPath = "ellipse(50% 80% at 50% 50%)";
-    flower.appendChild(petal);
-  }
+  const totalPetals = [
+    {count:8, radius:120},
+    {count:12, radius:200}
+  ];
 
-  const layer2Radius = 200;
-  for(let i=0;i<12;i++){
-    const angle = (i/12)*Math.PI*2;
-    const x = centerX + Math.cos(angle)*layer2Radius;
-    const y = centerY + Math.sin(angle)*layer2Radius*0.9;
-    const petal = createRangoliPetal(60,x,y,i+8,angle);
-    petal.style.background = "#2ecc71";
-    petal.style.clipPath = "ellipse(50% 80% at 50% 50%)";
-    flower.appendChild(petal);
-  }
+  let petalIndex = 1; // start from 1 because center is 0
+  totalPetals.forEach(layer=>{
+    for(let i=0;i<layer.count;i++){
+      const angle = (i/layer.count)*Math.PI*2;
+      const x = centerX + Math.cos(angle)*layer.radius;
+      const y = centerY + Math.sin(angle)*layer.radius*0.9;
+
+      const petal = createRangoliPetal( layer.radius === 120 ? 70 : 60, x, y, petalIndex, angle );
+      petal.style.background = "#ff4f7a"; // same red for all petals
+      petal.style.clipPath = "ellipse(50% 80% at 50% 50%)";
+      flower.appendChild(petal);
+      petalIndex++;
+    }
+  });
 }
 
 function createRangoliPetal(size,x,y,index,angle){
@@ -101,57 +52,10 @@ function createRangoliPetal(size,x,y,index,angle){
   petal.style.zIndex = 15-index;
 
   const img = document.createElement("img");
-  img.src = photos[(index+1)%photos.length].src;
-  img.alt = `Photo ${(index+1)%photos.length}`;
+  img.src = photos[index % photos.length].src; // cycle through photos
+  img.alt = `Photo ${index % photos.length + 1}`;
   petal.appendChild(img);
 
   addClickHandler(petal);
   return petal;
 }
-
-function addClickHandler(petal){
-  const close = document.createElement("button");
-  close.className="close-btn";
-  close.textContent="×";
-  close.onclick = (e)=>{
-    e.stopPropagation();
-    flower.classList.remove("dim");
-    document.querySelectorAll(".petal").forEach(p=>p.classList.remove("active"));
-  };
-  petal.appendChild(close);
-
-  petal.onclick = (e)=>{
-    e.stopPropagation();
-    flower.classList.add("dim");
-    document.querySelectorAll(".petal").forEach(p=>p.classList.remove("active"));
-    petal.classList.add("active");
-  };
-}
-
-function createConfetti(){
-  for(let i=0;i<40;i++){
-    const c = document.createElement("div");
-    c.className="confetti-piece";
-    c.style.left = Math.random()*100+"%";
-    c.style.animationDelay = Math.random()*0.5+"s";
-    c.style.animationDuration = (2.5+Math.random()*1.5)+"s";
-    confetti.appendChild(c);
-  }
-}
-
-restart.onclick = ()=>{
-  actor.classList.remove("walk");
-  bouquet.classList.remove("show");
-  text.classList.remove("show");
-  stage.classList.remove("glow");
-  restart.classList.remove("show");
-  flower.innerHTML="";
-  confetti.innerHTML="";
-  countdown.style.display="grid";
-  startCountdown();
-};
-
-setTimeout(()=>{
-  loading.style.display="none";
-  startCountdown();
-},1500);
