@@ -123,3 +123,14 @@ body{
 .restart{position:absolute;bottom:25px;right:30px;background:var(--rose);color:white;border:none;padding:14px 28px;border-radius:28px;cursor:pointer;opacity:0;transition:opacity 0.5s ease;font-weight:600;font-size:17px; z-index:20;}
 .restart.show{opacity:1;}
 .restart:hover{background:#e9456a;transform:translateY(-3px);}
+.confetti-piece{
+  position:absolute;
+  top:-10vh;
+  pointer-events:none;
+  animation:fall linear forwards;
+}
+
+@keyframes fall{
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(110vh) rotate(720deg); }
+}
